@@ -1,0 +1,52 @@
+# Le jeu de données est le jeu BitcatYeast de la librarie : "biclust"
+
+
+# Chargement de la librarie kohonen pour le bi-som
+library('kohonen')
+
+# Le jeu de données est le jeu wines du package kohonen
+
+wine_data <- scale(wines)
+som.wines <- som(scale(wines), grid = somgrid(5, 5, "rectangular"))
+
+summary(som.wines)
+
+
+som_model <- som(wine_data, grid=somgrid(5, 5, "rectangular"), alpha=c(0.5,0.1), keep.data = TRUE)
+
+plot(som_model, type="changes")
+
+#Node count plot
+#plot(som_model, type="count", main="Node Counts")
+
+# U-matrix visualisation
+#plot(som_model, type="dist.neighbours", main = "SOM neighbour distances")
+
+# Weight Vector View
+plot(som_model, type="codes")
+
+# Kohonen Heatmap creation
+plot(som_model, type = "property", property = getCodes(som_model)[,1], main=colnames(getCodes(som_model))[1])
+
+
+var_unscaled <- aggregate(as.numeric(wine_data[,1]), by=list(som_model$unit.classif), FUN=mean, simplify=TRUE)[,1] 
+#plot(som_model, type = "property", property=var_unscaled, main=colnames(getCodes(som_model))[4])
+
+
+
+
+    # Viewing WCSS for kmeans
+ #   mydata <- som_model$codes 
+ #   wss <- (nrow(mydata)-1)*sum(apply(mydata,2,var)) 
+ #   for (i in 2:15) {
+ #     wss[i] <- sum(kmeans(mydata, centers=i)$withinss)
+ #   }
+ #   plot(wss)
+
+
+    # Visualising cluster results
+    ## use hierarchical clustering to cluster the codebook vectors
+    som_cluster <- as.double(cutree(hclust(dist(som_model$codes)), 6))
+    # plot these results:
+    plot(som_model, type="mapping", bgcol = pretty_palette[som_cluster], main = "Clusters") 
+    add.cluster.boundaries(som_model, som_cluster)
